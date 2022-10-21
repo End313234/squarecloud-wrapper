@@ -15,4 +15,11 @@ type GetCurrentUserRawResponse struct {
 	Applications []Application `json:"applications"`
 }
 
+type GetUserRawResponse struct {
+	User         RawUser       `json:"user"`
+	Applications []Application `json:"applications"`
+}
+
 type GetCurrentUserResponse = BaseResponse[GetCurrentUserRawResponse]
+
+type GetUserResponse = BaseResponse[GetUserRawResponse]

@@ -21,6 +21,7 @@ func newRequester(authorization string) *requester {
 	}
 }
 
+// Makes a GET request to the SquareCloud API
 func (r *requester) Get(route string, v any) error {
 	request, _ := http.NewRequest(http.MethodGet, constants.BASE_URL+route, nil)
 	request.Header["Authorization"] = []string{r.Authorization}

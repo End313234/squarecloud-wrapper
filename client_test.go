@@ -95,3 +95,20 @@ func TestFetchCurrentUser(t *testing.T) {
 	assert.NotEmpty(client.Cache.Users)
 	assert.Equal(currentUser, client.Cache.Users[0])
 }
+
+func TestGetUserSuccessful(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewClient(utils.GetEnv("API_KEY"), nil)
+	assert.NotEmpty(client)
+	assert.Nil(client.Logger)
+
+	err := client.Connect()
+	assert.NoError(err)
+
+	user, err := client.GetUser(utils.GetEnv("DISCORD_USER_ID"))
+	assert.NoError(err)
+	assert.Equal(utils.GetEnv("DISCORD_USER_ID"), user.Id)
+	assert.NotEmpty(client.Cache.Users)
+	assert.Equal(user, client.Cache.Users[0])
+}

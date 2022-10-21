@@ -2,6 +2,7 @@ package squarecloud
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/End313234/squarecloud-wrapper/internal/utils"
@@ -24,12 +25,6 @@ func NewClient(APIToken string, logger *log.Logger) *Client {
 		Cache: Cache{
 			Users: []User{},
 		},
-	}
-}
-
-func (client *Client) checkIfIsConnected() {
-	if !client.isConnected {
-		panic("client must be connected")
 	}
 }
 
@@ -79,9 +74,39 @@ func (client *Client) FetchCurrentUser() (User, error) {
 		Applications:  currentRawUser.Response.Applications,
 	}
 
-	if !client.Cache.Users.Contains(currentUser) {
-		client.Cache.Users.Add(currentUser)
-	}
+	client.Cache.Users.addsToCacheIfTargetDoesNotExist(currentUser)
 
 	return currentUser, nil
+}
+
+// Searches for an user in the local cache and makes a request
+// to the SquareCloud API if the user couldn't be found in the
+// cache
+func (client *Client) GetUser(id string) (User, error) {
+	for _, user := range client.Cache.Users {
+		if user.Id == id {
+			client.Cache.Users.addsToCacheIfTargetDoesNotExist(user)
+
+			return user, nil
+		}
+	}
+
+	var fetchedUser GetUserResponse
+	err := client.Requester.Get(fmt.Sprintf("/user/%s", id), &fetchedUser)
+	if err != nil {
+		return User{}, err
+	}
+
+	user := User{
+		Id:            fetchedUser.Response.User.Id,
+		Tag:           fetchedUser.Response.User.Tag,
+		Email:         fetchedUser.Response.User.Email,
+		Plan:          fetchedUser.Response.User.Plan,
+		IsBlocklisted: fetchedUser.Response.User.IsBlocklisted,
+		Applications:  fetchedUser.Response.Applications,
+	}
+
+	client.Cache.Users.addsToCacheIfTargetDoesNotExist(user)
+
+	return user, nil
 }
