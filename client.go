@@ -62,6 +62,8 @@ func (client *Client) FetchCurrentUser() (User, error) {
 	var currentRawUser GetCurrentUserResponse
 	err := client.Requester.Get("/user", &currentRawUser)
 	if err != nil {
+		client.Logger.Printf("Unsuccessful request to /user: %s\n", err.Error())
+
 		return currentUser, utils.ThrowSquareCloudAPIError(err.Error())
 	}
 
@@ -74,7 +76,11 @@ func (client *Client) FetchCurrentUser() (User, error) {
 		Applications:  currentRawUser.Response.Applications,
 	}
 
-	client.Cache.Users.addsToCacheIfTargetDoesNotExist(currentUser)
+	client.Cache.Users.addsToCacheIfTargetDoesNotExist(currentUser, func() {
+		client.Logger.Printf("User of ID %s has been cached\n", currentUser.Id)
+	})
+
+	client.Logger.Println("Successful request to /user")
 
 	return currentUser, nil
 }
@@ -85,8 +91,6 @@ func (client *Client) FetchCurrentUser() (User, error) {
 func (client *Client) GetUser(id string) (User, error) {
 	for _, user := range client.Cache.Users {
 		if user.Id == id {
-			client.Cache.Users.addsToCacheIfTargetDoesNotExist(user)
-
 			return user, nil
 		}
 	}
@@ -106,7 +110,11 @@ func (client *Client) GetUser(id string) (User, error) {
 		Applications:  fetchedUser.Response.Applications,
 	}
 
-	client.Cache.Users.addsToCacheIfTargetDoesNotExist(user)
+	client.Logger.Printf("Successful request to /user/%s\n", user.Id)
+
+	client.Cache.Users.addsToCacheIfTargetDoesNotExist(user, func() {
+		client.Logger.Printf("User of ID %s has been cached\n", user.Id)
+	})
 
 	return user, nil
 }

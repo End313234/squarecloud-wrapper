@@ -28,9 +28,13 @@ func (bc *BaseCache[T]) Contains(target T) bool {
 	return false
 }
 
-func (bc *BaseCache[T]) addsToCacheIfTargetDoesNotExist(target T) {
+func (bc *BaseCache[T]) addsToCacheIfTargetDoesNotExist(target T, callbacks ...func()) {
 	if !bc.Contains(target) {
 		bc.Add(target)
+
+		for _, callback := range callbacks {
+			callback()
+		}
 	}
 }
 
