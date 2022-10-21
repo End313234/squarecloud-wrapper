@@ -14,7 +14,7 @@ import (
 func TestMain(m *testing.M) {
 	exitCode := m.Run()
 
-	// os.Remove("./logs.log")
+	os.Remove("./logs.log")
 
 	os.Exit(exitCode)
 }
